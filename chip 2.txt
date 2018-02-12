@@ -1,0 +1,133 @@
+/*
+ * GccApplication1.c
+ *
+ * Created: 5/5/2017 7:57:21 PM
+ * Author : DINESH
+ */ 
+
+#include <avr/io.h>
+#include <avr/interrupt.h>
+#include <LCD.h>
+#include <util/delay.h>
+#include <math.h>
+unsigned int adc_val,z,k,v;
+int x=0,a=0,b=0,s=0;
+unsigned int j;
+float rt,steinhart;
+int in1=0;
+int main(void)
+{
+	DDRB=0xff;
+	DDRD=0x00;;
+	PORTD=0xff;
+	TCCR2|=(1<<COM21) | (1<<WGM20) | (1<<WGM21) | (1<<CS20);
+	ADCSRA |= (1<<ADPS1) | (1<<ADPS0) | (1<<ADIE) | (1<<ADEN);
+	ADMUX |= (1<<REFS0);
+    sei();
+    ADCSRA |= 1<<ADSC;
+    while (1) 
+    {
+		
+	}
+}
+ISR(ADC_vect)
+{
+	j=ADC;
+	rt=(1570.000000/(1024.000000/j-1.000000));
+	steinhart = rt / 10000.00000;
+	steinhart = log(steinhart);                 // ln(R/Ro)
+	steinhart /= 3950.000000;                   // 1/B * ln(R/Ro)
+	steinhart += 1.000000 / (25.00000 + 273.150000); // + (1/To)
+	steinhart = 1.000000 / steinhart;                 // Invert
+	steinhart -= 273.1500000;
+	steinhart -=steinhart*1.500000/100.000000;
+	if((!(bit_is_clear(PIND,1))) && ((bit_is_clear(PIND,0))))
+	{
+		while(!(bit_is_clear(PIND,1)))
+		{
+			a=1;
+		}
+		while(!(bit_is_clear(PIND,0)))
+		{
+			if ((bit_is_clear(PIND,1)) && (a==1))
+			{
+				x++;
+				a=0;
+			}
+		}
+		
+	}
+	if((!(bit_is_clear(PIND,0))) && ((bit_is_clear(PIND,1))))
+	{
+		while(!(bit_is_clear(PIND,0)))
+		{
+			b=1;
+		}
+		while(!(bit_is_clear(PIND,1)))
+		{
+			if ((bit_is_clear(PIND,0)) && (b==1))
+			{
+				x--;
+				b=0;
+			}
+		}
+		
+	}
+	if (x>0)
+	{
+		PORTB=(0<<PINB0);
+	}
+	if ((bit_is_clear(PIND,3)))
+	{
+		s=1;
+	}
+	if (!(bit_is_clear(PIND,3)))
+	{
+		s=0;
+		PORTB=(0<<PINB2);
+		OCR2=0;
+	}
+	if ((x>0) && (s==1))
+	{
+		if (bit_is_clear(PIND,2))
+		{
+			PORTB=(0<<PINB2);
+		}
+		if (!(bit_is_clear(PIND,2)))
+		{
+			PORTB|=(1<<PINB2);
+		}
+		if ((steinhart>20) && (steinhart<=24))
+		{
+			OCR2=51;
+		}
+		if ((steinhart>24) && (steinhart<=28))
+		{
+			OCR2=102;
+		}
+		if ((steinhart>28) && (steinhart<=30))
+		{
+			OCR2=153;
+		}
+		if ((steinhart>30) && (steinhart<=32))
+		{
+			OCR2=204;
+		}
+		if (steinhart>32)
+		{
+			OCR2=255;
+		}
+		if (steinhart<20)
+		{
+			OCR2=0;
+		}
+	}
+	if (x==0)
+	{
+		OCR2=0;
+		PORTB=(0<<PINB2);
+		PORTB|=(1<<PINB0);
+	}
+	ADCSRA |= (1<<ADSC);
+}
+
