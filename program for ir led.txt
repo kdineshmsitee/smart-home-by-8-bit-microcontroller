@@ -1,0 +1,62 @@
+/*
+ * GccApplication1.c
+ *
+ * Created: 5/5/2017 7:57:21 PM
+ * Author : DINESH
+ */ 
+
+#include <avr/io.h>
+
+
+int main(void)
+{
+	DDRC=0xff;
+	DDRD=0x00;
+	PORTD=0xff;
+	int x=0,a=0,b=0;
+    /* Replace with your application code */
+    while (1) 
+    {
+		if((!(bit_is_clear(PIND,1))) && ((bit_is_clear(PIND,0))))
+		{
+			while(!(bit_is_clear(PIND,1)))
+			{
+				a=1;
+			}
+			while(!(bit_is_clear(PIND,0)))
+			{
+				if ((bit_is_clear(PIND,1)) && (a==1))
+				{
+					x++;
+					a=0;
+				}
+			}
+			
+		}
+		if((!(bit_is_clear(PIND,0))) && ((bit_is_clear(PIND,1))))
+		{
+			while(!(bit_is_clear(PIND,0)))
+			{
+				b=1;
+			}
+			while(!(bit_is_clear(PIND,1)))
+			{
+				if ((bit_is_clear(PIND,0)) && (b==1))
+				{
+					x--;
+					b=0;
+				}
+			}
+			
+		}
+		if (x>0)
+		{
+			PORTC=0x01;
+		}
+		if (x==0)
+		{
+			PORTC=0x00;
+		}
+	}
+}
+

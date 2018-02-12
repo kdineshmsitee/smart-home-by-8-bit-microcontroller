@@ -1,0 +1,29 @@
+/*
+ * GccApplication12.c
+ *
+ * Created: 5/10/2017 8:40:13 PM
+ * Author : DINESH
+ */ 
+
+#include <avr/io.h>
+
+
+int main(void)
+{
+	DDRB=0x00;
+	PORTB=0xff;
+	DDRD=0xff;
+    /* Replace with your application code */
+    while (1) 
+    {
+		if (bit_is_clear(PINB,0))
+		{
+			PORTD=0x00;
+		}
+		if (!(bit_is_clear(PINB,0)))
+		{
+			PORTD=0xff;
+		}
+    }
+}
+

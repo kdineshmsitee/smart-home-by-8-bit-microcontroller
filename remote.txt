@@ -1,0 +1,97 @@
+/*
+ * GccApplication10.c
+ *
+ * Created: 5/10/2017 6:25:38 PM
+ * Author : DINESH
+ */ 
+
+#include <avr/io.h>
+uint8_t impulse_prev = 0;
+uint8_t counter_impulse_1 = 0;
+uint8_t flag_rx = 0,data;
+uint8_t counter_impulse_0 = 0;
+uint8_t impulse = 0;
+uint64_t counter_ik = 0;
+uint64_t code = 0;
+uint64_t code1 =0;
+int a1=1,a2=1,a3=1,a4=1,a5=1,a6=1,a7=1,a8=1;
+int s1=0,s2=0,s3=0,s4=0,s5=0,s6=0,s7=0,s8=0;
+int x1,x2,x3,x4,x5,x6,x7,x8;
+int main(void)
+{
+	DDRD=0xff;
+	DDRB=0x00;
+	PORTB=0xff;
+	TCCR1B=(1<<CS12) | (1<<CS10);
+	while(1)
+	{
+		if ((bit_is_clear(PINB,1)))
+		{
+			flag_rx=1;
+			TCNT1=0;
+		}
+		while (!(bit_is_clear(PINB,1)))
+		{
+			counter_impulse_1++;
+		}
+		if ((flag_rx==1) && (counter_impulse_1>0))
+		{
+			counter_ik++;
+		}
+		if ((flag_rx==1) && (counter_impulse_1>0) && (counter_impulse_1<60) && (counter_ik<33))
+		{
+			if (counter_ik<25)
+			{
+				code|=0<<(counter_ik-17);
+			}
+			code1|=0<<(counter_ik-25);
+			counter_impulse_1=0;
+		}
+		if ((flag_rx==1) && (counter_impulse_1>60) && (counter_ik<33))
+		{
+			if (counter_ik<25)
+			{
+				code|=1<<(counter_ik-17);
+			}
+			code1|=1<<(counter_ik-25);
+			counter_impulse_1=0;
+		}
+		if ((counter_ik==33) && (flag_rx==1))
+		{
+			if ((code==0xEB) && (code1==0x15))
+			{
+				PORTD^=0x01;
+			}
+			if ((code==0xC9) && (code1==0x37))
+			{
+				PORTD^=0x02;
+			}
+			if ((code==0xC1) && (code1==0x3F))
+			{
+				PORTD^=0x04;
+			}
+			if ((code==0xE7) && (code1==0x19))
+			{
+				PORTD^=0x08;
+			}
+			if ((code==0xF3) && (code1==0x0D))
+			{
+				PORTD^=0x10;
+			}
+			if ((code==0xF5) && (code1==0x0B))
+			{
+				PORTD^=0x20;
+			}
+		}
+		if (TCNT1>70)
+		{
+			code1=0;
+			code=0;
+			flag_rx=0;
+			counter_ik=0;
+			counter_impulse_1=0;
+			TCNT1=0;
+		}
+	}
+}
+
